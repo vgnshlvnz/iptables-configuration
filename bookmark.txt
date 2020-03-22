@@ -1,0 +1,1 @@
+read until page 29. Need to fix dhclient issue in iptables log
