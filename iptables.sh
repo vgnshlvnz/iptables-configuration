@@ -35,7 +35,6 @@ $IPTABLES -A INPUT -i eth0 ! -s $INT_NET -j DROP
 ### Accept rules  
 echo "[+] Setting up ACCEPT rules"  
 $IPTABLES -A INPUT -i eth0 -p tcp -s $INT_NET --dport 22 --syn -m state --state NEW -j ACCEPT  
-$IPTABLES -A INPUT -i eth0 -p udp --dport 67:68 --sport 67:68 -j ACCEPT
 $IPTABLES -A INPUT -p icmp --icmp-type echo-request -j ACCEPT  
   
 ### default INPUT LOG rule  
