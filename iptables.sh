@@ -49,9 +49,10 @@ $IPTABLES -A INPUT -i $INTF -p tcp -s $INTNET --dport 22 -m conntrack --ctstate 
 #### DHCPOFFER rule
 $IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
 $IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 67 -d 255.255.255.255 --dport 68 -j ACCEPT
-####
-$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
-$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $INTNET --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $INTNET --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 192.168.1.104 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+
 ### DHCP rules without -t filter
 #$IPTABLES -A INPUT -i $INTINF -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
 #$IPTABLES -A INPUT -i $INTINF -p udp -s 0.0.0.0 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
@@ -80,6 +81,7 @@ $IPTABLES -A OUTPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 43 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT
+$IPTABLES -t filter -A OUTPUT -p udp -s 192.168.1.104 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 4321 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
