@@ -6,7 +6,7 @@ IPTABLES=/sbin/iptables
 IP6TABLES=/sbin/ip6tables
 MODPROBE=/sbin/modprobe
 INTNET=192.168.1.0/24
-INTF=enp0s25
+INTF=eth0
 
 ### Flushing existing rules and setting DROP on chain policies  ###
 echo "[+] Flushing existing iptables rules"
@@ -81,7 +81,7 @@ $IPTABLES -A OUTPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 43 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT
-$IPTABLES -t filter -A OUTPUT -p udp -s 192.168.1.104 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+$IPTABLES -t filter -A OUTPUT -p udp --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 4321 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
