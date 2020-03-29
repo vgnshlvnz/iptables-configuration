@@ -7,6 +7,7 @@ IP6TABLES=/sbin/ip6tables
 MODPROBE=/sbin/modprobe
 INTNET=192.168.1.0/24
 INTF=eth0
+GATEWAY=192.168.1.254
 
 ### Flushing existing rules and setting DROP on chain policies  ###
 echo "[+] Flushing existing iptables rules"
@@ -40,24 +41,24 @@ $IPTABLES -A INPUT -m conntrack --ctstate INVALID -j DROP
 $IPTABLES -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ### anti-spoofing rules
-$IPTABLES -A INPUT -i $INTF ! -s $INTNET -j LOG --log-prefix "SPOOFED PKT "
+#$IPTABLES -A INPUT -i $INTF ! -s $INTNET -j LOG --log-prefix "SPOOFED PKT "
+
+$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j LOG --log-prefix "DHCP DISCOVER/REQUEST "
+$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $GATEWAY --sport 67 -d 255.255.255.255 --dport 68 -j LOG --log-prefix "DHCP OFFER/REQUEST "
+$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $GATEWAY --sport 67 -d 192.168.1.107 --dport 68 -j LOG --log-prefix "DHCP UNKNOWN "
+
 $IPTABLES -A INPUT -i $INTF ! -s $INTNET -j DROP
 
 ### ACCEPT rules
 $IPTABLES -A INPUT -i $INTF -p tcp -s $INTNET --dport 22 -m conntrack --ctstate NEW -j ACCEPT
-### DHCP rules gotten from https://ixnfo.com/en/iptables-rules-for-dhcp.html
 #### DHCPOFFER rule
+
 $IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
 $IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 67 -d 255.255.255.255 --dport 68 -j ACCEPT
-#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 0.0.0.0 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
-#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $INTNET --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
-#$IPTABLES -t filter -A INPUT -i $INTF -p udp -s 192.168.1.104 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $GATEWAY --sport 67 -d 255.255.255.255 --dport 68 -j ACCEPT
+$IPTABLES -t filter -A INPUT -i $INTF -p udp -s $GATEWAY --sport 67 -d 192.168.1.107 --dport 68 -j ACCEPT
 
-### DHCP rules without -t filter
-#$IPTABLES -A INPUT -i $INTINF -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
-#$IPTABLES -A INPUT -i $INTINF -p udp -s 0.0.0.0 --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
-#$IPTABLES -A INPUT -i $INTINF -p udp -s $INTNET --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
-
+#Allow ICMP echo request
 $IPTABLES -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 ### default INPUT LOG rule
@@ -81,7 +82,10 @@ $IPTABLES -A OUTPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 43 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT
-$IPTABLES -t filter -A OUTPUT -p udp --sport 68 -d 192.168.1.254 --dport 67 -j ACCEPT
+## To allow outbound connection to gateway for DHCP request
+$IPTABLES -t filter -A OUTPUT -p udp --sport 68 -d $GATEWAY --dport 67 -j LOG --log-prefix "DHCP OUTBOUND"
+$IPTABLES -t filter -A OUTPUT -p udp --sport 68 -d $GATEWAY --dport 67 -j ACCEPT
+
 $IPTABLES -A OUTPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 4321 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
